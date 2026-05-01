@@ -11,14 +11,20 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.OutlinedTextFieldDefaults.Container
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -27,45 +33,70 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
-import coil3.compose.LocalPlatformContext
-import coil3.compose.rememberAsyncImagePainter
-import coil3.compose.rememberConstraintsSizeResolver
 import coil3.request.ImageRequest
 import coil3.request.crossfade
 import com.dcbrh.pisogecko.R
 import com.dcbrh.pisogecko.domain.models.CryptoCurrency
 import org.koin.compose.viewmodel.koinViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    var listPage by remember { mutableIntStateOf(1) }
 
-    LaunchedEffect(Unit) {
-        viewModel.getCurrencies()
+    LaunchedEffect(Unit, listPage) {
+        viewModel.getCurrencies(listPage)
     }
 
-    Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-        when (val state = uiState) {
-            is HomeUiState.Loading -> Box(
-                modifier = Modifier.fillMaxSize().padding(innerPadding),
-                contentAlignment = Alignment.Center
-            ) { CircularProgressIndicator() }
-
-            is HomeUiState.Success -> CurrencyList(
-                currencies = state.currencies,
-                modifier = Modifier.padding(innerPadding)
-            )
-
-            is HomeUiState.Error -> Box(
-                modifier = Modifier.fillMaxSize().padding(innerPadding),
-                contentAlignment = Alignment.Center
+    Scaffold(
+        modifier = Modifier.fillMaxSize()
+    ) { innerPadding ->
+        Column {
+            Box(
+                modifier = Modifier.weight(1f)
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(state.error)
-                    Button(onClick = viewModel::getCurrencies) { Text("Retry") }
+                when (val state = uiState) {
+                    is HomeUiState.Loading -> Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding),
+                        contentAlignment = Alignment.Center
+                    ) { CircularProgressIndicator() }
+
+                    is HomeUiState.Success -> CurrencyList(
+                        currencies = state.currencies,
+                        modifier = Modifier
+                            .padding(innerPadding)
+                    )
+
+                    is HomeUiState.Error -> Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(state.error)
+                            Button(onClick = { viewModel.getCurrencies(listPage) }) { Text("Retry") }
+                        }
+                    }
                 }
+            }
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Button(
+                    onClick = { if (listPage > 1) listPage-- }
+                ) { Text("Previous") }
+                Button(
+                    onClick = { listPage++ }
+                ) { Text("Next") }
             }
         }
     }
@@ -92,14 +123,6 @@ fun CurrencyCard(
     currency: CryptoCurrency,
     modifier: Modifier = Modifier
 ) {
-//    val sizeResolver = rememberConstraintsSizeResolver()
-//    val painter = rememberAsyncImagePainter(
-//        model = ImageRequest.Builder(LocalPlatformContext.current)
-//            .data(currency.image)
-//            .size(sizeResolver)
-//            .build(),
-//    )
-
     Card(
         modifier = modifier
             .fillMaxWidth()
@@ -112,11 +135,6 @@ fun CurrencyCard(
                 .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-//            Image(
-//                painter = painter,
-//                contentDescription = stringResource(R.string.description_currency) + currency.name,
-//                modifier = Modifier.then(sizeResolver),
-//            )
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(currency.image)

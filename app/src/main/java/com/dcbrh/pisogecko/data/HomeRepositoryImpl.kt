@@ -8,12 +8,12 @@ class HomeRepositoryImpl(
     private val _service: CoinGeckoService
 ): HomeRepository {
     val TAG = "HomeRepositoryImpl"
-    override suspend fun getCurrencies(): Result<List<CryptoCurrency>> {
+    override suspend fun getCurrencies(page: Int): Result<List<CryptoCurrency>> {
         try {
             val response: List<CryptoCurrency> = _service.getCurrencies(
-                "usd",
+                vsCurrency = "usd",
                 perPage = "20",
-                page = "1"
+                page = page.toString()
             )
             Log.d(TAG, "getCurrencies: $response")
             return Result.success(response)

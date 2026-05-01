@@ -19,11 +19,11 @@ class HomeViewModel(
     init {
     }
 
-    fun getCurrencies() {
+    fun getCurrencies(page: Int) {
         viewModelScope.launch {
             _uiState.value = HomeUiState.Loading
 
-            _repository.getCurrencies()
+            _repository.getCurrencies(page = page)
                 .onSuccess { currencies ->
                     Log.d(TAG, "getCurrencies size: ${currencies.size}")
                     _uiState.value = HomeUiState.Success(currencies)
