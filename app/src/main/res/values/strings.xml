@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">pisogecko</string>
-    <string name="description_currency">Crypto Currency Image</string>
+    <string name="currency_image">Currency Image</string>
+    <string name="button_close">Close Button</string>
 </resources>

@@ -12,5 +12,6 @@ data class CryptoCurrency(
     @SerializedName("current_price")
     val currentPrice: Double,
     @SerializedName("market_cap_rank")
-    val rank: Int
+    val rank: Int,
+    val description: String?
 )

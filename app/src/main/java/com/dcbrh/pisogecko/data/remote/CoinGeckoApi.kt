@@ -1,14 +1,14 @@
-package com.dcbrh.pisogecko.core
+package com.dcbrh.pisogecko.data.remote
 
 import com.dcbrh.pisogecko.BuildConfig
 import com.dcbrh.pisogecko.core.contstants.Constants
-import com.dcbrh.pisogecko.data.CoinGeckoService
+import com.dcbrh.pisogecko.data.services.CoinGeckoService
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class RetrofitClient {
+class CoinGeckoApi {
     val baseUrl = Constants.BASE_URL
     val apiKey = BuildConfig.API_KEY
 

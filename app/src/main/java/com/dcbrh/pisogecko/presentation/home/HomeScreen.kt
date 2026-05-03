@@ -1,6 +1,5 @@
 package com.dcbrh.pisogecko.presentation.home
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,14 +10,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.OutlinedTextFieldDefaults.Container
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -43,6 +41,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = koinViewModel(),
+    onClickCurrency: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var listPage by remember { mutableIntStateOf(1) }
@@ -52,6 +51,7 @@ fun HomeScreen(
     }
 
     Scaffold(
+        topBar = ::HomeTopBar,
         modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
         Column {
@@ -69,7 +69,8 @@ fun HomeScreen(
                     is HomeUiState.Success -> CurrencyList(
                         currencies = state.currencies,
                         modifier = Modifier
-                            .padding(innerPadding)
+                            .padding(innerPadding),
+                        onClickCurrency = onClickCurrency
                     )
 
                     is HomeUiState.Error -> Box(
@@ -102,17 +103,30 @@ fun HomeScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HomeTopBar() {
+    TopAppBar(
+        title = { Text("Home" )},
+    )
+}
+
 @Composable
 fun CurrencyList(
     currencies: List<CryptoCurrency>,
-    modifier: Modifier = Modifier) {
+    modifier: Modifier = Modifier,
+    onClickCurrency: (String) -> Unit
+) {
     LazyColumn(
         modifier = modifier
     ) {
         items(
             count = currencies.size,
             itemContent = { index ->
-                CurrencyCard(currency = currencies[index])
+                CurrencyCard(
+                    currency = currencies[index],
+                    onClickCurrency = onClickCurrency
+                )
             }
         )
     }
@@ -121,13 +135,14 @@ fun CurrencyList(
 @Composable
 fun CurrencyCard(
     currency: CryptoCurrency,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onClickCurrency: (String) -> Unit
 ) {
     Card(
         modifier = modifier
             .fillMaxWidth()
             .padding(start = 8.dp, end = 8.dp, top = 8.dp),
-        onClick = {}
+        onClick = { onClickCurrency(currency.id) }
     ) {
         Row(
             modifier = Modifier
@@ -140,7 +155,7 @@ fun CurrencyCard(
                     .data(currency.image)
                     .crossfade(true)
                     .build(),
-                contentDescription = stringResource(R.string.description_currency) + currency.name,
+                contentDescription = stringResource(R.string.currency_image) + currency.name,
                 contentScale = ContentScale.Fit,
                 modifier = Modifier.size(48.dp),
             )
